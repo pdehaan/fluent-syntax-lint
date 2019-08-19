@@ -1,28 +1,46 @@
+#!/usr/bin/env node
+
 const fs = require("fs");
 const fluent = require("fluent-syntax");
 const glob = require("glob");
 
-glob("./locales/*/app.ftl", (err, locales) => {
-  const en = main("en");
- 
-  locales = locales.map(locale => locale.replace(new RegExp("^./locales/(.*?)/app.ftl$"), "$1"));
-  locales.forEach(locale => compareLocales(locale, en));
-});
+const argv = process.argv.slice(2);
+
+main(...argv);
+
+function main(g, defaultLocale="en-US") {
+  if (!g) {
+    console.error(`USAGE: npx pdehaan/fluent-syntax-lint ['./path/to/*/app.ftl'] [default-locale=en-US]`);
+    process.exit(1);
+  }
+  glob(g, (err, locales) => {
+    if (err) {
+      console.error(err);
+      process.exit(2);
+    }
+
+    const en = _main(defaultLocale);
+    const globRE = new RegExp(`^${g.replace("/*/", "/(.*?)/")}$`);
+   
+    locales = locales.map(locale => locale.replace(globRE, "$1"));
+    locales.forEach(locale => compareLocales(locale, en));
+  });
+}
 
 function compareLocales(locale, referenceMap) {
   console.log(`Checking ${locale}...`);
-  const localeMap = main(locale);
+  const localeMap = _main(locale);
 
   for (const [key, values] of localeMap) {
     for (const value of values) {
       if (referenceMap.has(key) && !referenceMap.get(key).includes(value)) {
-        console.log("What the what???", key, value);
+        console.log("\t%s => %s", key, value);
       }
     }
   }
 }
 
-function main(lang="en") {
+function _main(lang="en") {
   const ftl = parseFtl(lang);
   const ftlMap = new Map();
 
@@ -91,12 +109,16 @@ function parseVariables(name, el) {
     case "VariantList":
       return;
 
+    case "CallExpression":
+      // console.log("\tUNKNOWN CallExpression");
+      return;
+
     default:
       console.error(`UNKNOWN el.expression.type: ${el.expression.type}\n`, JSON.stringify(el, null, 2));
   }
 }
 
 function parseFtl(locale) {
-  const txt = fs.readFileSync(`./locales/${locale}/app.ftl`, "utf-8");
+  const txt = fs.readFileSync(`./locales/${locale}/send.ftl`, "utf-8");
   return fluent.parse(txt);
 }

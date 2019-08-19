@@ -3,6 +3,7 @@
   "description": "Check for some mismatches in ftl files",
   "version": "1.0.0",
   "author": "Peter deHaan <peter@deseloper.com> (https://about.me/peterdehaan)",
+  "bin": "index.js",
   "bugs": {
     "url": "https://github.com/pdehaan/fluent-syntax-lint/issues"
   },
