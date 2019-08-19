@@ -21,10 +21,7 @@ function main(g, defaultLocale="en-US") {
 
     const enFtl = g.replace("/*/", `/${defaultLocale}/`);
     const en = _main(enFtl);
-    const globRE = new RegExp(`^${g.replace("/*/", "/(.*?)/")}$`);
-   
-    locales = locales.map(locale => locale.replace(globRE, "$1"));
-    locales.forEach(locale => compareLocales(g.replace("/*/", `/${locale}/`), en));
+    locales.forEach(locale => compareLocales(locale, en));
   });
 }
 
@@ -41,7 +38,7 @@ function compareLocales(locale, referenceMap) {
   }
 }
 
-function _main(lang="en-US") {
+function _main(lang) {
   const ftl = parseFtl(lang);
   const ftlMap = new Map();
 
