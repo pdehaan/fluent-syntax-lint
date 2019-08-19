@@ -19,11 +19,12 @@ function main(g, defaultLocale="en-US") {
       process.exit(2);
     }
 
-    const en = _main(defaultLocale);
+    const enFtl = g.replace("/*/", `/${defaultLocale}/`);
+    const en = _main(enFtl);
     const globRE = new RegExp(`^${g.replace("/*/", "/(.*?)/")}$`);
    
     locales = locales.map(locale => locale.replace(globRE, "$1"));
-    locales.forEach(locale => compareLocales(locale, en));
+    locales.forEach(locale => compareLocales(g.replace("/*/", `/${locale}/`), en));
   });
 }
 
@@ -40,7 +41,7 @@ function compareLocales(locale, referenceMap) {
   }
 }
 
-function _main(lang="en") {
+function _main(lang="en-US") {
   const ftl = parseFtl(lang);
   const ftlMap = new Map();
 
@@ -119,6 +120,6 @@ function parseVariables(name, el) {
 }
 
 function parseFtl(locale) {
-  const txt = fs.readFileSync(`./locales/${locale}/send.ftl`, "utf-8");
+  const txt = fs.readFileSync(locale, "utf-8");
   return fluent.parse(txt);
 }
